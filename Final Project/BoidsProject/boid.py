@@ -51,20 +51,27 @@ class Boid():
             self.position.y = self.height
 
     def alignment(self,boids): # Boids tends to TURN in same direction with nearby boids.
-        steering_angle = Vector([0,0])
-        pack_angle = Vector([0,0])
-        no_of_boids = 0
+        average_vector = Vector(*np.zeros(2))
+        steering_angle = Vector(*np.zeros(2))
+        total_velocity = Vector(*np.zeros(2))
+        boid_count = 0
 
-        for boid in boids:
-            if np.linalg.norm(boid.position - self.position) < 50: # Defining the area of flocking.
-                pack_angle += boid.velocity
-                no_of_boids +=1
+        for bird in boids:
+            if np.linalg.norm(bird.position - self.position) < 50: # The distance between boids.
+                total_velocity += bird.velocity
+                boid_count += 1
 
-        if no_of_boids > 1:
-            pack_angle = pack_angle / np.linalg.norm(pack_angle)
-            steering_angle = pack_angle - self.velocity
+        if boid_count > 1:
+            average_vector = Vector(*(total_velocity / boid_count))
+            average_vector = (average_vector/np.linalg.norm(average_vector))
 
-        self.acceleration += steering_angle
+        return average_vector
+
+
+
+    def alignment_update(self,boids):
+        alignment = self.alignment(boids)
+        self.acceleration += alignment
 
 
     def separation(self): # Avoid collisions

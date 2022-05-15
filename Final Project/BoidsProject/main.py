@@ -9,7 +9,7 @@ WIDTH = 1000
 HEIGHT = 1000
 
 # Creating pack of birds at random location.
-FLOCK_SIZE = 20
+FLOCK_SIZE = 30
 PREDATOR_SIZE = 2
 
 flock = [Boid(*np.random.rand(2)*1000, WIDTH, HEIGHT) for i in range(FLOCK_SIZE)]
@@ -23,9 +23,9 @@ def draw():
     background(51) # Background color.
 
     for boid in flock:
-        boid.boundary()
         boid.show()
-        #boid.alignment(flock)
+        boid.alignment_update(flock)
+        boid.boundary()
         boid.update()
 
     for predator in predators:
