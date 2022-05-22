@@ -1,8 +1,17 @@
 from p5 import setup, draw, size, background, run
 import p5
 import numpy as np
+import random
 from boid import Boid
 from boid import Predator
+
+
+def random_generator():
+    a = random.uniform(0, 0.5)
+    b = random.uniform(0, 0.5)
+    c = 1 - (a + b)
+    return a, b, c
+
 
 # Screen Settings.
 WIDTH = 1000
@@ -12,7 +21,7 @@ HEIGHT = 1000
 FLOCK_SIZE = 20
 PREDATOR_SIZE = 2
 
-flock = [Boid(*np.random.rand(2) * 1000, WIDTH, HEIGHT) for i in range(FLOCK_SIZE)]
+flock = [Boid(*np.random.rand(2) * 1000, WIDTH, HEIGHT,random_generator()[0],random_generator()[1],random_generator()[2]) for i in range(FLOCK_SIZE)]
 predators = [Predator(*np.random.rand(2) * 1000, WIDTH, HEIGHT) for j in range(PREDATOR_SIZE)]
 
 
@@ -33,11 +42,11 @@ def draw():
             neighbour = boid.Neighbours(flock)
 
             boid.combine_steers(neighbour,iter_boid)
-
+            boid.collusion(flock)
             boid.boundary()
+
             # if boid.birth(flock, iter_boid):
-            #     new_bird = Boid(Boid(*np.random.rand(2) * 1000, WIDTH, HEIGHT))
-            #     flock.append(new_bird)
+            #     flock.append(Boid(*np.random.rand(2) * 1000, WIDTH, HEIGHT,random_generator()[0],random_generator()[1],random_generator()[2]))
             boid.update(iter_boid)
         else:
             flock.remove(boid)

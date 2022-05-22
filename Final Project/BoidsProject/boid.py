@@ -1,19 +1,22 @@
 import numpy as np
 from p5 import setup, draw, size, background, run, Vector, stroke, triangle, color, fill, circle
+import random
 
 K = 1
 S = 1
 M = 1
 
+COEF_ADJUST = 10
 
 class Boid():
 
-    def __init__(self, x, y, WIDTH, HEIGHT):
+    def __init__(self, x, y, WIDTH, HEIGHT, align_coef, separation_coef, cohesion_coef):
         self.position = Vector(x, y)
         vec = np.random.uniform(-10,10,2)
         self.velocity = Vector(*vec)
         vec2 = np.random.uniform(-0.5,0.5,2)
         self.acceleration = Vector(*vec2)
+
 
         self.max_speed = 5
         self.force = 0.5
@@ -21,6 +24,10 @@ class Boid():
         self.height = HEIGHT
 
         self.alive = True
+
+        self.align_coef = align_coef
+        self.separation_coef = separation_coef
+        self.cohesion_coef = cohesion_coef
 
     def Neighbours(self, boids):
         neighbours = []
@@ -89,7 +96,7 @@ class Boid():
             average_vector = (average_vector / np.linalg.norm(average_vector)) * self.max_speed
         if iter % 15 == 0 :
             average_vector += Vector(*np.random.uniform(-0.5,0.5,2)) * 7
-        return average_vector
+        return average_vector * (self.align_coef * COEF_ADJUST)
 
     def alignment_update(self, boids,iter):
         alignment = self.alignment(boids,iter)
@@ -109,7 +116,7 @@ class Boid():
         for bird in boids:
             distance = np.linalg.norm(bird.position - self.position)
 
-            if self.position != bird.position and distance < 50:
+            if self.position != bird.position and distance < 70:
 
                 position_diff = (self.position - bird.position) / distance
                 difference_total += position_diff
@@ -124,7 +131,7 @@ class Boid():
                 if np.linalg.norm(steering_angle) > self.force:
                     steering_angle = (steering_angle / np.linalg.norm(steering_angle)) * self.force
 
-        return steering_angle
+        return steering_angle * (self.separation_coef * COEF_ADJUST)
 
 
     def separation_update(self, boids):
@@ -154,7 +161,7 @@ class Boid():
             if np.linalg.norm(steering_angle) > self.force:
                 steering_angle = (steering_angle / np.linalg.norm(steering_angle)) * self.force
 
-        return steering_angle
+        return steering_angle * (self.cohesion_coef * COEF_ADJUST)
 
     def cohesion_update(self, boids):
         cohesion = self.cohesion(boids)
@@ -168,17 +175,39 @@ class Boid():
         self.acceleration += S * separation_steer + K * cohesion + M * alignment
 
     def birth(self,boids,iter):
+        count = 0
+        for bird in boids:
+            if np.linalg.norm(bird.position - self.position) < 50:
+                count +=1
+                #*np.random.rand(2) * 1000
+            if count > 2 and iter % 5 == 0:
+                pos_x = self.position.x + random.uniform(-3, 3)
+                pos_y = self.position.y + random.uniform(-3, 3)
+
+                pos = Vector(pos_x,pos_y)
+                return True, pos
+
+
+    def collusion(self,boids):
 
         for bird in boids:
-            bird_count = bird.Neighbours(boids)
+            distance = distance = np.linalg.norm(bird.position - self.position)
 
-            if bird_count > 4 and iter % 5 == 0:
-                return True
+            if self.position != bird.position and distance < 10:
+                self.alive = False
+
+            if self.alive == False:
+                fill('black')
+
+
+
+
+
 
 
 class Predator(Boid):
     def __init__(self, x, y, WIDTH, HEIGHT):
-        Boid.__init__(self, x, y, WIDTH, HEIGHT)
+        Boid.__init__(self, x, y, WIDTH, HEIGHT,align_coef=0,separation_coef=0,cohesion_coef=0)
         self.position = Vector(x, y)
         vec = (np.random.rand(2)) * 10 + 0.2
         self.velocity = Vector(*vec)
