@@ -17,7 +17,8 @@ class Boid():
         vec2 = np.random.uniform(-0.5,0.5,2)
         self.acceleration = Vector(*vec2)
 
-
+        self.age = 0
+        self.color = 'white'
         self.max_speed = 5
         self.force = 0.5
         self.width = WIDTH
@@ -42,7 +43,7 @@ class Boid():
         tri_len = (np.sqrt(3) / 3) * side
         tri_len2 = (np.sqrt(3) / 6) * side
 
-        fill('white')
+        fill(self.color)
 
         if self.alive == False:  # just for debugging to see which birds die
             fill("black")
@@ -174,17 +175,20 @@ class Boid():
 
         self.acceleration += S * separation_steer + K * cohesion + M * alignment
 
-    def birth(self,boids,iter):
+    def birth(self,boids,iter, rand):
         count = 0
         for bird in boids:
             if np.linalg.norm(bird.position - self.position) < 50:
                 count +=1
                 #*np.random.rand(2) * 1000
-            if count > 2 and iter % 5 == 0:
-                pos_x = self.position.x + random.uniform(-3, 3)
-                pos_y = self.position.y + random.uniform(-3, 3)
+                #random.uniform(-3, 3)
+            if count > 3 and iter % 10 == 0 and rand == 1:
 
-                pos = Vector(pos_x,pos_y)
+                self.position += self.cohesion(boids)
+                pos_x = self.position.x + 600
+                pos_y = self.position.y + 600
+
+                pos = self.position
                 return True, pos
 
 
@@ -195,6 +199,7 @@ class Boid():
 
             if self.position != bird.position and distance < 10:
                 self.alive = False
+                bird.alive = False
 
             if self.alive == False:
                 fill('black')
