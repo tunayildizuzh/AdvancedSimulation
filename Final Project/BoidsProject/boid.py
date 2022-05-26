@@ -169,19 +169,21 @@ class Boid():
         self.acceleration += K * cohesion
 
     def combine_steers(self, boids,iter):
+
         separation_steer = self.separation(boids)
         cohesion = self.cohesion(boids)
         alignment = self.alignment(boids,iter)
 
         self.acceleration += S * separation_steer + K * cohesion + M * alignment
+        self.age +=1
+        return self.age
 
     def birth(self,boids,iter, rand):
         count = 0
         for bird in boids:
             if np.linalg.norm(bird.position - self.position) < 50:
                 count +=1
-                #*np.random.rand(2) * 1000
-                #random.uniform(-3, 3)
+
             if count > 3 and iter % 10 == 0 and rand == 1:
 
                 self.position += self.cohesion(boids)
@@ -271,3 +273,4 @@ class Predator(Boid):
         B = (self.position[0] - (side / 2), self.position[1] - tri_len2)
         C = (self.position[0] + (side / 2), self.position[1] - tri_len2)
         triangle(A[0], A[1], B[0], B[1], C[0], C[1])
+
